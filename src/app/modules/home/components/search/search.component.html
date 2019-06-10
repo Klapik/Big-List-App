@@ -2,5 +2,3 @@
     <input (keyup)="search($event.target.value)" (keyup.enter)="search($event.target.value, true)">
     <p *ngIf="error">{{error}}</p>
 </div>
-
-<app-loading-spinner></app-loading-spinner>

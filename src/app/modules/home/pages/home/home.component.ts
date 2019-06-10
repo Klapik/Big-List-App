@@ -1,15 +1,16 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { DocumentService } from 'src/app/services/document.service';
 import { SearchService } from 'src/app/services/search.service';
 import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
+import { takeWhile } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(LoadingSpinnerComponent, { static: false }) loadingSpinnerComponent: LoadingSpinnerComponent;
   @ViewChild(CdkVirtualScrollViewport, { static: false }) viewport: CdkVirtualScrollViewport;
 
@@ -40,15 +41,29 @@ export class HomeComponent implements OnInit {
       class: 'col-1'
     },
   ];
+  private alive: boolean;
 
   constructor(public documentService: DocumentService,
     public searchService: SearchService) { }
 
   ngOnInit() {
+    this.alive = true;
     this.searchService.init('name', { reverse: false });
-    this.searchService.data.subscribe(data => {
-      this.data = [...data];
-    });
+    this.searchService.data.pipe(
+      takeWhile(() => this.alive)).subscribe(data => {
+        this.data = [...data];
+      });
+  }
+
+  ngAfterViewInit() {
+    this.searchService.loading.pipe(
+      takeWhile(() => this.alive)).subscribe((val) => {
+        if (val) {
+          this.loadingSpinnerComponent.show();
+        } else {
+          this.loadingSpinnerComponent.hide();
+        }
+      });
   }
 
   public nextBatch() {
@@ -67,7 +82,6 @@ export class HomeComponent implements OnInit {
   }
 
   public sort(value) {
-    this.loadingSpinnerComponent.show();
     if (this.sortProperties.field !== value) {
       this.sortProperties.reverse = null;
     }
@@ -87,9 +101,10 @@ export class HomeComponent implements OnInit {
         break;
       }
     }
-    this.searchService.sortData(this.sortProperties.field, { reverse: this.sortProperties.reverse }).then(() => {
-      this.loadingSpinnerComponent.hide();
-    });
+    this.searchService.sortData(this.sortProperties.field, { reverse: this.sortProperties.reverse });
   }
 
+  ngOnDestroy() {
+    this.alive = false;
+  }
 }

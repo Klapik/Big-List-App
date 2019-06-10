@@ -1,27 +1,27 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
-import { LoadingSpinnerComponent } from '../../components/loading-spinner/loading-spinner.component';
+import { takeWhile } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss']
 })
-export class SearchComponent implements OnInit {
-  @ViewChild(LoadingSpinnerComponent, { static: false }) loadingSpinnerComponent: LoadingSpinnerComponent;
+export class SearchComponent implements OnInit, OnDestroy {
 
-  searchTerm$ = new Subject<string>();
-  error = null;
-  term = '';
+  public searchTerm$ = new Subject<string>();
+  public error = null;
+  private term = '';
+  private alive: boolean;
 
   constructor(private searchService: SearchService) {
-    this.searchService.search(this.searchTerm$).subscribe( () => {
-      this.loadingSpinnerComponent.hide();
-    });
   }
 
   ngOnInit() {
+    this.alive = true;
+    this.searchService.search(this.searchTerm$).pipe(
+      takeWhile(() => this.alive)).subscribe();
   }
 
   public search(term: string, isEnter?: boolean) {
@@ -29,7 +29,6 @@ export class SearchComponent implements OnInit {
       this.error = null;
       if (isEnter && (this.term !== term)) {
         this.term = term;
-        this.loadingSpinnerComponent.show();
         this.searchTerm$.next(term);
       }
     } else {
@@ -37,4 +36,7 @@ export class SearchComponent implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.alive = false;
+  }
 }

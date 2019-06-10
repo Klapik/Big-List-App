@@ -23,6 +23,7 @@ export class SearchService {
   // Source data
   private _done = new BehaviorSubject(false);
   private _loading = new BehaviorSubject(false);
+  private _loadingMore = new BehaviorSubject(false);
   private _data = new BehaviorSubject([]);
 
   private query: QueryConfig;
@@ -96,6 +97,7 @@ export class SearchService {
       this._data.next(res.hits);
       this.query.offset += res.hits.length;
       this._loading.next(false);
+      this._loadingMore.next(false);
       // no more values, mark done
       if (!res.hits.length) {
         this._done.next(true);
@@ -109,11 +111,11 @@ export class SearchService {
     if (end <= (total - 30)) {
       return;
     }
-    if (this._done.value || this._loading.value) {
+    if (this._done.value || this._loading.value || this._loadingMore.value) {
       return;
     }
     // loading
-    this._loading.next(true);
+    this._loadingMore.next(true);
     this.indexes[this.query.index].search('', {
       query: this.query.term,
       offset: this.query.offset,
@@ -121,7 +123,7 @@ export class SearchService {
     }).then(res => {
       this.query.offset += res.hits.length;
       this._data.next(res.hits);
-      this._loading.next(false);
+      this._loadingMore.next(false);
       // no more values, mark done
       if (!res.hits.length) {
         this._done.next(true);
@@ -155,5 +157,3 @@ export class SearchService {
     );
   }
 }
-
-
