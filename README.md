@@ -63,7 +63,7 @@ src/ project source code
 ## Customization
 
 - To change project name you need to update `angular.json` and `package.json` files.
-- Navbar is included to `app.component.html` as <app-header>. Component is in `app/src/core/components/header` directory.
+- To start the project, enter the keys in enviroments and configure algolia (indexes)
 
 ### Who do I talk to?
 
