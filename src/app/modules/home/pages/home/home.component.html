@@ -1,0 +1,34 @@
+<app-search></app-search>
+<ng-container *ngIf="data">
+  <table id="documents">
+    <tr class="row">
+      <th class="col-1">id</th>
+      <th *ngFor="let method of sortMethods" [ngClass]="method.class" (click)="sort(method.sortType)">
+        {{method.sortType}}
+        <span *ngIf="sortProperties.field === method.sortType
+         && sortProperties.reverse" class="fa fa-caret-down"></span>
+        <span *ngIf="sortProperties.field === method.sortType
+        && !sortProperties.reverse" class="fa fa-caret-up"></span>
+      </th>
+    </tr>
+
+    <cdk-virtual-scroll-viewport minBufferPx=600 maxBufferPx=1000 itemSize="50" (scrolledIndexChange)="nextBatch()">
+
+      <tr *cdkVirtualFor="let doc of data; let i = index;" (click)="removeItem(i, doc)"
+        class="animated row">
+        <th class="col-1">{{i + 1}}</th>
+        <td class="col-2">{{ doc.name }}</td>
+        <td class="col-2">{{ doc.surname }}</td>
+        <td class="col-3">{{ doc.email }}</td>
+        <td class="col-3">{{ doc.fullname }}</td>
+        <td class="col-1">{{ doc.integer }}</td>
+      </tr>
+
+      <iframe *ngIf="theEnd" src="https://giphy.com/embed/lD76yTC5zxZPG" width="480" height="352" frameBorder="0"
+        class="giphy-embed" allowFullScreen></iframe>
+
+    </cdk-virtual-scroll-viewport>
+  </table>
+</ng-container>
+
+<app-loading-spinner></app-loading-spinner>

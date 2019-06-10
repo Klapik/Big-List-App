@@ -1,0 +1,18 @@
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    input {
+        height: 30px;
+        border: 2px solid green;
+        border-radius: 10px;
+        &:focus {
+            outline: none;
+        }
+    }
+    p {
+        margin: 0;
+        color: red;
+    }
+}
